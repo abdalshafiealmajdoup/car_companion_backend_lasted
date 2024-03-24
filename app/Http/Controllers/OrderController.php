@@ -16,7 +16,7 @@ class OrderController extends Controller
             'ServiceID' => 'required|exists:services,ServiceID',
             'CenterID' => 'required|exists:service_centers,CenterID',
             'CarType' => 'required|nullable|string|max:100',
-            'orderCarType' => 'required|nullable|string|max:100',  
+            'orderCarType' => 'required|nullable|string|max:100',
             'PhoneNumber' => 'required|nullable|string|max:20',
             'Email' => 'required|email|max:255',
             'GooglePlaceID' => 'required|nullable|string|max:255',
@@ -41,24 +41,28 @@ class OrderController extends Controller
     }
 
     public function update(Request $request, $id) {
+        // Validate only the fields that need updating
         $validatedData = $request->validate([
-            'CustomerID' => 'required|exists:customers,CustomerID',
-            'ServiceID' => 'required|exists:services,ServiceID',
-            'CenterID' => 'required|exists:service_centers,CenterID',
-            'CarType' => 'required|nullable|string|max:100',
-            'PhoneNumber' => 'required|nullable|string|max:20',
-            'Email' => 'required|email|unique:orders|max:255',
-            'GooglePlaceID' => 'required|nullable|string|max:255',
-            'CustomerNotes' => 'required|nullable|string',
-            'City' => 'required',
-            'Region' => 'required',
             'StatusOrder' => 'required|string|max:50',
+            'CustomerNotes' => 'nullable|string',
         ]);
 
+        // Find the order by ID
         $order = Order::findOrFail($id);
-        $order->update($validatedData);
+
+        // Update only the specified fields
+        $order->StatusOrder = $validatedData['StatusOrder'];
+        if(isset($validatedData['CustomerNotes'])) {
+            $order->CustomerNotes = $validatedData['CustomerNotes'];
+        }
+
+        // Save the changes
+        $order->save();
+
+        // Return the updated order
         return response()->json($order, 200);
     }
+
 
     public function destroy($id) {
         Order::findOrFail($id)->delete();
