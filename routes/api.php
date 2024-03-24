@@ -8,6 +8,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\ServiceCenterController;
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,4 +78,12 @@ Route::middleware('auth:service_center')->group(function () {
     Route::get("/service-centers/{id}", [ServiceCenterController::class, "show"]);
     Route::put("/service-centers/{id}", [ServiceCenterController::class, "update"]);
     Route::delete("/service-centers/{id}", [ServiceCenterController::class, "destroy"]);
+});
+
+Route::prefix('contacts')->group(function () {
+    Route::get('/', [ContactController::class, 'index']);
+    Route::post('/', [ContactController::class, 'store']);
+    Route::get('/{id}', [ContactController::class, 'show']);
+    Route::put('/{id}', [ContactController::class, 'update']);
+    Route::delete('/{id}', [ContactController::class, 'destroy']);
 });

@@ -64,8 +64,8 @@ class CustomerController extends Controller
 
         $validatedData = $request->validate([
             'Name' => 'sometimes|required|max:255',
-            'Phone' => 'sometimes|required|unique:customers,Phone,' . $id . '|max:20',
-            'Email' => 'sometimes|required|email|unique:customers,Email,' . $id . '|max:255',
+            'Phone' => 'sometimes|required|max:20',
+            'Email' => 'sometimes|required|string|email|max:255',
             'Password' => 'sometimes|required|max:255',
         ]);
 

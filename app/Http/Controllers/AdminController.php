@@ -48,7 +48,7 @@ class AdminController extends Controller
     public function update(Request $request, $id) {
         $validatedData = $request->validate([
             'Name' => 'sometimes|required|string|max:255',
-            'Email' => 'sometimes|required|string|email|max:255|unique:admins,Email,'. $id . ',AdminID',
+            'Email' => 'sometimes|required|string|email|max:255',
             'Password' => 'sometimes|required|string|min:6',
         ]);
 
