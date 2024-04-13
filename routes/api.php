@@ -31,6 +31,12 @@ Route::get("/customers/{id}", [CustomerController::class, "show"]);
 Route::put("/customers/{id}", [CustomerController::class, "update"]);
 Route::delete("/customers/{id}", [CustomerController::class, "destroy"]);
 Route::get("/customer-orders/{customer_id}", [CustomerController::class, "getOrdersList"]);
+// Password Reset Routes
+Route::post('/customers/forgot-password', [CustomerController::class, 'sendResetCode']);
+Route::post('/customers/reset-password', [CustomerController::class, 'resetPassword']);
+Route::post('/customers/verify-otp', [CustomerController::class, 'verifyOtp']);
+
+
 
 
 

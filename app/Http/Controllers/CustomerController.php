@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 
 class CustomerController extends Controller
@@ -84,4 +85,77 @@ class CustomerController extends Controller
         $orders = Order::where('CustomerID',$customer_id)->get();
         return response()->json($orders, 200);
     }
+    public function sendResetCode(Request $request) {
+        $request->validate([
+            'Phone' => 'required|regex:/^2189[1234]\d{7}$/',
+        ]);
+        $user = Customer::where('Phone', $request->Phone)->firstOrFail();
+        $otp = rand(100000, 999999); // Generate a 6-digit OTP
+
+        // تخزين الـ OTP
+        Cache::put('otp_'.$user->Phone, $otp, now()->addMinutes(5)); // يخزن الـ OTP لمدة 5 دقائق
+
+        $response = $this->sendSms($request->Phone, "Your OTP is: $otp");
+        return response()->json(['message' => 'OTP sent successfully', 'sms_response' => $response]);
+    }
+
+
+    public function verifyOtp(Request $request) {
+        $request->validate([
+            'Phone' => 'required|regex:/^2189[1234]\d{7}$/',
+            'otp' => 'required|digits:6',
+        ]);
+
+        $user = Customer::where('Phone', $request->Phone)->firstOrFail();
+
+        // استرجاع الـ OTP
+        $correctOtp = Cache::get('otp_'.$user->Phone);
+
+        if ($request->otp == $correctOtp) {
+            Cache::forget('otp_'.$user->Phone);  // Optional: Clear OTP from storage after successful verification
+            return response()->json(['message' => 'OTP verified successfully']);
+        } else {
+            return response()->json(['message' => 'Invalid OTP'], 401);
+        }
+    }
+
+
+    public function resetPassword(Request $request) {
+        $request->validate([
+            'Phone' => 'required',
+            'new_password' => 'required|min:6',
+        ]);
+
+        // Assuming OTP has already been verified
+        $user = Customer::where('Phone', $request->Phone)->firstOrFail();
+        $user->update(['Password' => Hash::make($request->new_password)]);
+        return response()->json(['message' => 'Password reset successfully']);
+    }
+
+    protected function retrieveOtp($user) {
+        // Implement logic to retrieve OTP from your storage (e.g., cache or database)
+        // Placeholder logic
+        return '123456';  // Example OTP
+    }
+
+    protected function clearOtp($user) {
+        // Implement logic to clear OTP after verification
+    }
+
+
+    protected function sendSms($phone, $message) {
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post('https://sms.techlines.ly/api/v1/send-sms', [
+            'form_params' => [
+                'receiver' => $phone,
+                'message' => $message,
+            ],
+            'headers' => [
+                'username' => 'otp-sms',
+                'password' => 'R2Y4V6YNM#$_wRfvn',
+            ],
+        ]);
+        return $response->getBody()->getContents();
+    }
+
 }
