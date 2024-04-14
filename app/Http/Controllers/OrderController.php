@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Order;
+use App\Models\ServiceCenter;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -31,6 +32,18 @@ class OrderController extends Controller
         $validatedData['City'] = $validatedData['CityName'];
         $validatedData['Region'] = $validatedData['areaName'];
         $order = Order::create($validatedData);
+
+        $center = ServiceCenter::find($validatedData['CenterID']);
+        if ($center) {
+            $orderServiceName = $order->service_name;
+            $message = "تم إرسال طلب خدمة جديد
+            نوع الخدمة: " . $orderServiceName . "
+            رقم هاتف الزبون: " . $order->PhoneNumber . "
+            رفيق السيارة ";
+                        $this->sendSms($center->Phone, $message);
+        } else {
+        }
+
         return response()->json($order, 201);
     }
 
@@ -67,5 +80,20 @@ class OrderController extends Controller
     public function destroy($id) {
         Order::findOrFail($id)->delete();
         return response()->json(['message' => 'Order deleted successfully'], 200);
+    }
+
+    protected function sendSms($phone, $message) {
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post('https://sms.techlines.ly/api/v1/send-sms', [
+            'form_params' => [
+                'receiver' => $phone,
+                'message' => $message,
+            ],
+            'headers' => [
+                'username' => 'otp-sms',
+                'password' => 'R2Y4V6YNM#$_wRfvn',
+            ],
+        ]);
+        return $response->getBody()->getContents();
     }
 }

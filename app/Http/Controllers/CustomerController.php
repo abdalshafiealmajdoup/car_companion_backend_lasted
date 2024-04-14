@@ -95,8 +95,10 @@ class CustomerController extends Controller
         // تخزين الـ OTP
         Cache::put('otp_'.$user->Phone, $otp, now()->addMinutes(5)); // يخزن الـ OTP لمدة 5 دقائق
 
-        $response = $this->sendSms($request->Phone, "Your OTP is: $otp");
-        return response()->json(['message' => 'OTP sent successfully', 'sms_response' => $response]);
+        $response = $this->sendSms($request->Phone, "تم إرسال رمز التحقق الخاص بك
+        رمز التحقق: $otp (رفيق السيارة)");
+
+                return response()->json(['message' => 'OTP sent successfully', 'sms_response' => $response]);
     }
 
 
